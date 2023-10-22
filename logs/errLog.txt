@@ -1,0 +1,1 @@
+22-10-2023	11:43:16	6fb274f6-5740-4900-b32f-614c1c7b6a99	Error: Not allowed by CORS
