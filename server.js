@@ -32,47 +32,13 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
 // serve static files
-app.use(express.static(path.join(__dirname, '/public')))
+app.use("/", express.static(path.join(__dirname, '/public')))
+app.use("/subdir", express.static(path.join(__dirname, '/public')))
 
-// ^ = begin with a slash, $ = end with a slash, | = or, ()? = optional inside the parenthesis
-app.get("^/$|/index(.html)?", (req, res) => {
-    // res.sendFile("./views/index.html", { root: __dirname }) - express way
-    res.sendFile(path.join(__dirname, 'views', 'index.html')) // node way
-})
-
-app.get("/new-page(.html)?", (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'new-page.html'))
-})
-
-app.get("/old-page(.html)?", (req, res) => {
-    res.redirect(301, '/new-page.html') // 302 response code ny default
-})
-
-// Route handlers
-app.get("/hello(.html)?", (req, res, next) => {
-    console.log("Attempted to load hello.html")
-    next()
-}, (req, res) => {
-    res.send("Hello World!")
-})
-
-// Chain route handlers
-const one = (req, res, next) => {
-    console.log("one")
-    next()
-}
-
-const two = (req, res, next) => {
-    console.log("two")
-    next()
-}
-
-const three = (req, res) => {
-    console.log("three")
-    res.send("Finished!")
-}
-
-app.get("/chain(.html)?", [one, two, three])
+// routes
+app.use("/", require("./routes/root"))
+app.use("/subdir", require("./routes/subdir"))
+app.use("/users", require("./routes/api/users"))
 
 // app.use doesn't accept regex as use is used for middleware. app.all is used for routing and will accept regex.
 app.all("*", (req, res) => {
