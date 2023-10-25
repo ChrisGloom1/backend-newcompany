@@ -5,10 +5,17 @@ const cors = require('cors');
 const corsOptions = require('./config/corsOptions')
 const { logger } = require('./middleware/logEvents')
 const errorHandler = require('./middleware/errorHandler')
+const verifyJWT = require("./middleware/verifyJWT")
+const cookieParser = require('cookie-parser');
+const credentials = require('./middleware/credentials');
 const PORT = process.env.PORT || 3500;
 
 // custom middleware logger
 app.use(logger)
+
+// handle options credentials check - before CORS
+// and fetch cookies credentials requirement
+app.use(credentials)
 
 app.use(cors(corsOptions))
 
@@ -18,13 +25,20 @@ app.use(express.urlencoded({ extended: false }))
 // built in middleware for json
 app.use(express.json())
 
+// middleware for cookies
+app.use(cookieParser())
+
 // serve static files
 app.use("/", express.static(path.join(__dirname, '/public')))
 
 // routes
-app.use("/", require("./routes/api/root"))
-app.use('/register', require('./routes/api/register'));
-app.use('/auth', require('./routes/api/auth'));
+app.use("/", require("./routes/root"))
+app.use('/register', require('./routes/register'));
+app.use('/auth', require('./routes/auth'));
+app.use('/refresh', require('./routes/refresh'));
+app.use('/logout', require('./routes/logout'));
+
+app.use(verifyJWT) // all routes listed underneath this line will require a valid JWT
 app.use("/persons", require("./routes/api/persons"))
 
 // app.use doesn't accept regex as use is used for middleware. app.all is used for routing and will accept regex.
